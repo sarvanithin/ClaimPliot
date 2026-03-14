@@ -40,7 +40,7 @@ When a claim (Procedure Code, Diagnoses, Claim Reason, Clinical Notes) is ingest
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+ (For frontend, if building from source)
-- An active `MARTIAN_API_KEY` to route LLM requests efficiently.
+- An active `GROQ_API_KEY` to route LLM requests efficiently.
 
 ### 1. Backend Initialization
 
