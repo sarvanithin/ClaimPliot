@@ -53,7 +53,7 @@ source venv/bin/activate
 pip install -e .
 
 # Export API Keys (Martian endpoint used as default)
-export MARTIAN_API_KEY="sk-your-key-here"
+export GROQ_API_KEY="sk-your-key-here"
 
 # Start the highly concurrent FastAPI server
 uvicorn backend.main:app --reload --port 8000
