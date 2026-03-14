@@ -1,6 +1,20 @@
 # 🏥 ClaimPilot: AI-Powered Medical Revenue Cycle Agent
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > ClaimPilot is an intelligent, open-source AI agent engineered specifically for healthcare revenue cycle management. Instead of functioning as a generic "chatbot," ClaimPilot operates autonomously as a rigorous reasoning engine: it analyzes denied insurance claims, diagnoses the root cause against retrieved medical policies, identifies missing clinical evidence, and generates highly targeted, policy-cited appeal letters.
+
+### 🔗 [Live Demo on GitHub Pages](https://sarvanithin.github.io/ClaimPilot/)
+
+*(Update this link after renaming your repository to `ClaimPilot`!)*
+
+---
+
+### 📸 Application Demo
+
+*(Demo GIF or screenshot of the agent's logic pathway showing the bifurcated tracks and generated appeals)*
+
+> **Note for Contributors:** Please add a GIF here showcasing the Gap Analysis UI and the resulting Appeal generation.
 
 ---
 
@@ -85,7 +99,7 @@ The harness evaluates:
 - **Tone Professionalism:** Is the tone assertive but deferential to payer reviewers?
 - **Citation Specificity:** Did it exactly quote the LCD/NCD/Policy number?
 
-To run tests against the 20 complex mock scenarios:
+To run tests against the 10 complex mock scenarios:
 ```bash
 python -m evaluation.eval_runner
 ```

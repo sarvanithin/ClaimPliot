@@ -8,10 +8,8 @@ class Settings(BaseSettings):
     
     # LLM Settings
     OPENAI_API_KEY: str | None = None
-    MARTIAN_API_KEY: str | None = "sk-794db0b5a8af40c3b3f487052fe683c2"
-    MARTIAN_BASE_URL: str = "https://api.withmartian.com/v1"
-    ANTHROPIC_API_KEY: str | None = None
-    DEFAULT_MODEL: str = "openai/gpt-4o-mini"
+    GROQ_API_KEY: str | None = None
+    DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
     
     # ChromaDB
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_db"

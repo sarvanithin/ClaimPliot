@@ -5,7 +5,10 @@
     "claim": {
       "patient_id": "P-10042",
       "procedure_code": "99214",
-      "diagnosis_codes": ["E11.65", "E11.9"],
+      "diagnosis_codes": [
+        "E11.65",
+        "E11.9"
+      ],
       "payer": "Medicare",
       "denial_code": "CO-50",
       "denial_reason": "Services not deemed medically necessary",
@@ -17,7 +20,11 @@
       "category": "medical_necessity",
       "should_cite_policy": true,
       "min_policy_references": 1,
-      "appeal_should_contain": ["medically necessary", "A1c", "standard of care"]
+      "appeal_should_contain": [
+        "medically necessary",
+        "A1c",
+        "standard of care"
+      ]
     }
   },
   {
@@ -26,7 +33,9 @@
     "claim": {
       "patient_id": "P-88219",
       "procedure_code": "44140",
-      "diagnosis_codes": ["K35.80"],
+      "diagnosis_codes": [
+        "K35.80"
+      ],
       "payer": "UnitedHealthcare",
       "denial_code": "CO-197",
       "denial_reason": "Precertification/authorization/notification absent",
@@ -38,7 +47,228 @@
       "category": "auth_missing",
       "should_cite_policy": true,
       "min_policy_references": 0,
-      "appeal_should_contain": ["emergency", "ruptured appendix", "immediate"]
+      "appeal_should_contain": [
+        "emergency",
+        "ruptured appendix",
+        "immediate"
+      ]
+    }
+  },
+  {
+    "id": "tc_003",
+    "name": "Administrative: Duplicate Claim",
+    "claim": {
+      "patient_id": "P-20231",
+      "procedure_code": "99213",
+      "diagnosis_codes": [
+        "I10"
+      ],
+      "payer": "Humana",
+      "denial_code": "CO-18",
+      "denial_reason": "Duplicate claim/service",
+      "date_of_service": "03/12/2026",
+      "provider_name": "Downtown Clinic",
+      "clinical_notes": "This claim is not a duplicate service. The original submission contained an incorrect rendering provider NPI and was resubmitted as a corrected claim for the same date of service. Please reprocess the corrected claim."
+    },
+    "expected": {
+      "track": "administrative",
+      "category": "duplicate",
+      "should_cite_policy": false,
+      "appeal_should_contain": [
+        "corrected claim",
+        "NPI",
+        "duplicate"
+      ]
+    }
+  },
+  {
+    "id": "tc_004",
+    "name": "Clinical: Experimental / Investigational",
+    "claim": {
+      "patient_id": "P-44910",
+      "procedure_code": "81479",
+      "diagnosis_codes": [
+        "C50.919"
+      ],
+      "payer": "Aetna",
+      "denial_code": "CO-151",
+      "denial_reason": "Payment adjusted because the payer deems the information submitted does not support this many/frequency of services / investigational",
+      "date_of_service": "01/22/2026",
+      "provider_name": "Precision Oncology Associates",
+      "clinical_notes": "Patient with recurrent breast cancer. Molecular profiling requested to guide targeted therapy after standard options exhausted. Oncologist documents results will directly affect treatment selection."
+    },
+    "expected": {
+      "track": "clinical",
+      "category": "experimental",
+      "should_cite_policy": true,
+      "appeal_should_contain": [
+        "molecular profiling",
+        "targeted therapy",
+        "standard options exhausted"
+      ]
+    }
+  },
+  {
+    "id": "tc_005",
+    "name": "Clinical: Frequency Limit / Max Benefit",
+    "claim": {
+      "patient_id": "P-55012",
+      "procedure_code": "83036",
+      "diagnosis_codes": [
+        "E11.65"
+      ],
+      "payer": "Medicare",
+      "denial_code": "CO-119",
+      "denial_reason": "Benefit maximum for this time period has been reached",
+      "date_of_service": "02/05/2026",
+      "provider_name": "Main St Endocrinology",
+      "clinical_notes": "Patient with uncontrolled diabetes and recent medication changes. Repeat HbA1c requested earlier than standard interval because glucose readings remain elevated."
+    },
+    "expected": {
+      "track": "clinical",
+      "category": "medical_necessity",
+      "should_cite_policy": true,
+      "appeal_should_contain": [
+        "medication changes",
+        "glucose",
+        "elevated"
+      ]
+    }
+  },
+  {
+    "id": "tc_006",
+    "name": "Administrative: Timely Filing",
+    "claim": {
+      "patient_id": "P-66123",
+      "procedure_code": "93000",
+      "diagnosis_codes": [
+        "R07.9"
+      ],
+      "payer": "Cigna",
+      "denial_code": "CO-29",
+      "denial_reason": "The time limit for filing has expired",
+      "date_of_service": "08/15/2025",
+      "provider_name": "City Cardiology",
+      "clinical_notes": "Claim submitted late due to documented payer portal outage and provider system migration. Supporting submission logs and outage documentation attached."
+    },
+    "expected": {
+      "track": "administrative",
+      "category": "timely_filing",
+      "should_cite_policy": false,
+      "appeal_should_contain": [
+        "portal outage",
+        "system migration",
+        "submission logs"
+      ]
+    }
+  },
+  {
+    "id": "tc_007",
+    "name": "Administrative: Insufficient Documentation",
+    "claim": {
+      "patient_id": "P-77234",
+      "procedure_code": "97110",
+      "diagnosis_codes": [
+        "M54.50"
+      ],
+      "payer": "BCBS",
+      "denial_code": "CO-16",
+      "denial_reason": "Claim/service lacks information needed for adjudication",
+      "date_of_service": "01/30/2026",
+      "provider_name": "Advanced Physical Therapy",
+      "clinical_notes": "Patient with chronic low back pain limiting daily activities. Physical therapy initiated for strength, mobility, and pain reduction. Attached requested flowsheets and ROM measurements."
+    },
+    "expected": {
+      "track": "administrative",
+      "category": "documentation",
+      "should_cite_policy": false,
+      "appeal_should_contain": [
+        "attached",
+        "flowsheets",
+        "ROM measurements"
+      ]
+    }
+  },
+  {
+    "id": "tc_008",
+    "name": "Clinical: Step Therapy / Failed Conservative Treatment",
+    "claim": {
+      "patient_id": "P-88345",
+      "procedure_code": "62323",
+      "diagnosis_codes": [
+        "M54.16",
+        "M51.26"
+      ],
+      "payer": "Aetna",
+      "denial_code": "CO-50",
+      "denial_reason": "Not medically necessary",
+      "date_of_service": "02/18/2026",
+      "provider_name": "Spine & Pain Center",
+      "clinical_notes": "Patient with lumbar radiculopathy due to disc herniation. Failed NSAIDs, physical therapy, and activity modification. MRI confirms nerve root compression."
+    },
+    "expected": {
+      "track": "clinical",
+      "category": "medical_necessity",
+      "should_cite_policy": true,
+      "appeal_should_contain": [
+        "conservative",
+        "NSAIDs",
+        "physical therapy",
+        "MRI"
+      ]
+    }
+  },
+  {
+    "id": "tc_009",
+    "name": "Administrative: Diagnosis inconsistent with procedure",
+    "claim": {
+      "patient_id": "P-99456",
+      "procedure_code": "29881",
+      "diagnosis_codes": [
+        "M25.561"
+      ],
+      "payer": "Humana",
+      "denial_code": "CO-11",
+      "denial_reason": "Diagnosis inconsistent with procedure",
+      "date_of_service": "01/25/2026",
+      "provider_name": "Orthopedic Specialists",
+      "clinical_notes": "Procedure was arthroscopy with meniscectomy performed due to persistent mechanical symptoms. Corrected diagnosis code M23.20 added to claim."
+    },
+    "expected": {
+      "track": "administrative",
+      "category": "coding_error",
+      "should_cite_policy": false,
+      "appeal_should_contain": [
+        "corrected diagnosis",
+        "arthroscopy"
+      ]
+    }
+  },
+  {
+    "id": "tc_010",
+    "name": "Clinical: High-cost Specialty Medication",
+    "claim": {
+      "patient_id": "P-11567",
+      "procedure_code": "J2323",
+      "diagnosis_codes": [
+        "G35"
+      ],
+      "payer": "Medicare",
+      "denial_code": "CO-50",
+      "denial_reason": "Services not deemed medically necessary",
+      "date_of_service": "02/01/2026",
+      "provider_name": "Neurology Associates",
+      "clinical_notes": "Patient with relapsing remitting multiple sclerosis. Disease progression documented on MRI with new enhancing lesions while on glatiramer acetate. Changing to natalizumab."
+    },
+    "expected": {
+      "track": "clinical",
+      "category": "medical_necessity",
+      "should_cite_policy": true,
+      "appeal_should_contain": [
+        "multiple sclerosis",
+        "enhancing lesions",
+        "glatiramer acetate"
+      ]
     }
   }
 ]
