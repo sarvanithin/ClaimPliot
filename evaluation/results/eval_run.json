@@ -1,0 +1,33 @@
+{
+    "averages": {
+        "classification_accuracy": 0.5,
+        "appeal_completeness": 0.6666666666666666,
+        "citation_specificity": 1.0,
+        "professional_tone": 1.0
+    },
+    "overall": 0.75,
+    "details": [
+        {
+            "id": "tc_001",
+            "name": "Standard medical necessity denial - diabetes management",
+            "scores": {
+                "classification_accuracy": 1.0,
+                "appeal_completeness": 0.3333333333333333,
+                "citation_specificity": 1.0,
+                "professional_tone": 1.0
+            },
+            "overall": 0.8
+        },
+        {
+            "id": "tc_002",
+            "name": "Missing Prior Authorization - Emergency Exception",
+            "scores": {
+                "classification_accuracy": 0.0,
+                "appeal_completeness": 1.0,
+                "citation_specificity": 1.0,
+                "professional_tone": 1.0
+            },
+            "overall": 0.7
+        }
+    ]
+}

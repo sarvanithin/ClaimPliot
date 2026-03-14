@@ -1,0 +1,44 @@
+[
+  {
+    "id": "tc_001",
+    "name": "Standard medical necessity denial - diabetes management",
+    "claim": {
+      "patient_id": "P-10042",
+      "procedure_code": "99214",
+      "diagnosis_codes": ["E11.65", "E11.9"],
+      "payer": "Medicare",
+      "denial_code": "CO-50",
+      "denial_reason": "Services not deemed medically necessary",
+      "date_of_service": "01/15/2026",
+      "provider_name": "Dr. Sarah Smith, MD",
+      "clinical_notes": "Patient with uncontrolled T2DM, A1c 9.2%, on metformin and glipizide. Experiencing neuropathy. Increasing dosage and scheduling frequent follow-ups."
+    },
+    "expected": {
+      "category": "medical_necessity",
+      "should_cite_policy": true,
+      "min_policy_references": 1,
+      "appeal_should_contain": ["medically necessary", "A1c", "standard of care"]
+    }
+  },
+  {
+    "id": "tc_002",
+    "name": "Missing Prior Authorization - Emergency Exception",
+    "claim": {
+      "patient_id": "P-88219",
+      "procedure_code": "44140",
+      "diagnosis_codes": ["K35.80"],
+      "payer": "UnitedHealthcare",
+      "denial_code": "CO-197",
+      "denial_reason": "Precertification/authorization/notification absent",
+      "date_of_service": "02/10/2026",
+      "provider_name": "Mercy General Surgery",
+      "clinical_notes": "Patient arrived in ER with severe abdominal pain. CT showed ruptured appendix. Emergency appendectomy performed immediately to prevent sepsis."
+    },
+    "expected": {
+      "category": "auth_missing",
+      "should_cite_policy": true,
+      "min_policy_references": 0,
+      "appeal_should_contain": ["emergency", "ruptured appendix", "immediate"]
+    }
+  }
+]
