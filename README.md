@@ -52,7 +52,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -e .
 
-# Export API Keys (Martian endpoint used as default)
+# Export API Keys (GROQ endpoint used as default)
 export GROQ_API_KEY="sk-your-key-here"
 
 # Start the highly concurrent FastAPI server
