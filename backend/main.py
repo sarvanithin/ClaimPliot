@@ -2,9 +2,15 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api import routes
 from backend.api.v2_routes import v2_router
 from backend.fhir.mock_server import fhir_router
+
+# V1 routes require langchain (heavy deps) — optional for deployment
+try:
+    from backend.api import routes as v1_routes
+    _v1_available = True
+except ImportError:
+    _v1_available = False
 
 app = FastAPI(
     title="ClaimPilot API",
@@ -21,8 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# V1 routes (existing — untouched)
-app.include_router(routes.router, prefix="/api")
+# V1 routes (existing — requires langchain)
+if _v1_available:
+    app.include_router(v1_routes.router, prefix="/api")
 
 # V2 routes (new RCM pipeline)
 app.include_router(v2_router)
