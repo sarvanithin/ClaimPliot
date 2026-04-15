@@ -40,21 +40,18 @@ app.include_router(fhir_router)
 # Serve frontend static files (production)
 _static_dir = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 if _static_dir.exists():
-    from fastapi.staticfiles import StaticFiles
-    from fastapi.responses import FileResponse
+    from starlette.responses import FileResponse
+    from starlette.staticfiles import StaticFiles
 
-    @app.get("/")
-    def serve_root():
-        return FileResponse(str(_static_dir / "index.html"))
+    class SPAStaticFiles(StaticFiles):
+        """Serve index.html for any path not found (SPA routing)."""
+        async def get_response(self, path, scope):
+            try:
+                return await super().get_response(path, scope)
+            except Exception:
+                return await super().get_response("index.html", scope)
 
-    app.mount("/assets", StaticFiles(directory=str(_static_dir / "assets")), name="static")
-
-    @app.get("/{path:path}")
-    def serve_spa(path: str):
-        file_path = _static_dir / path
-        if file_path.exists() and file_path.is_file():
-            return FileResponse(str(file_path))
-        return FileResponse(str(_static_dir / "index.html"))
+    app.mount("/", SPAStaticFiles(directory=str(_static_dir), html=True), name="spa")
 else:
     @app.get("/")
     def root():
