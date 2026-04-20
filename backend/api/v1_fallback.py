@@ -1,7 +1,7 @@
 """Lightweight V1 appeal endpoint that works without langchain.
 
-Uses deterministic classification and template-based appeal generation
-so the Appeal Agent tab works in production without heavy LLM dependencies.
+Uses deterministic classification + LLM-powered appeal generation via
+Withmartian API (OpenAI-compatible). Falls back to templates if API unavailable.
 """
 
 from __future__ import annotations
@@ -10,9 +10,12 @@ import json
 import os
 from datetime import datetime
 
+import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
+
+from backend.config import settings
 
 v1_fallback_router = APIRouter()
 
@@ -320,14 +323,131 @@ Sincerely,
     )
 
 
+# ── LLM-powered appeal via Withmartian API ───────────────────────────
+
+async def _llm_generate_appeal(
+    claim: Claim, analysis: DenialAnalysis, policies: list[PolicyReference]
+) -> AppealLetter | None:
+    """Generate appeal letter using Withmartian (OpenAI-compatible) API.
+    Returns None if API is unavailable, so caller can fall back to templates."""
+    api_key = settings.MARTIAN_API_KEY
+    if not api_key:
+        return None
+
+    policy_text = "\n".join(f"- [{p.source}, {p.section}]: {p.text}" for p in policies)
+    dx_str = ", ".join(claim.diagnosis_codes)
+    today = datetime.utcnow().strftime("%m/%d/%Y")
+
+    system_prompt = """You are a medical billing appeal specialist. Generate professional,
+persuasive appeal letters for denied insurance claims. Your letters should:
+- Reference specific CARC denial codes and their implications
+- Cite relevant CMS/payer policies
+- Include clinical justification from the provided notes
+- Follow standard appeal letter format
+- Be concise but thorough
+
+Respond with ONLY the appeal letter text, no JSON wrapping or explanations."""
+
+    user_prompt = f"""Generate an appeal letter for this denied claim:
+
+CLAIM DETAILS:
+- Patient: {claim.patient_id}
+- Provider: {claim.provider_name}
+- Date of Service: {claim.date_of_service}
+- Procedure: CPT {claim.procedure_code}
+- Diagnoses: {dx_str}
+- Payer: {claim.payer}
+- Denial Code: {claim.denial_code}
+- Denial Reason: {analysis.denial_description}
+
+ANALYSIS:
+- Track: {analysis.track}
+- Category: {analysis.denial_category}
+- Root Cause: {analysis.root_cause}
+- Strategy: {analysis.appeal_strategy}
+
+CLINICAL NOTES:
+{claim.clinical_notes or 'No additional clinical notes provided.'}
+
+RELEVANT POLICIES:
+{policy_text}
+
+Write a formal appeal letter addressed to {claim.payer} Claims Review Department."""
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                f"{settings.MARTIAN_BASE_URL}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": settings.MARTIAN_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 1500,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            full_text = data["choices"][0]["message"]["content"]
+
+        # Determine attachments and missing evidence based on category
+        attachments = ["Clinical Notes", "Provider Letter of Medical Necessity"]
+        missing = []
+        if analysis.denial_category == "medical_necessity":
+            attachments.extend(["Operative Report", "Treatment History"])
+            if not claim.clinical_notes:
+                missing.append("Detailed clinical notes documenting medical necessity")
+            missing.append("Documentation of failed conservative treatment attempts")
+        elif analysis.denial_category == "auth_missing":
+            attachments = ["Prior Authorization Reference", "Clinical Urgency Documentation"]
+        elif analysis.denial_category == "coding_error":
+            attachments = ["Operative Report", "Coding Rationale"]
+
+        score_map = {"coding_error": 80, "auth_missing": 75, "documentation": 70, "medical_necessity": 65, "coverage": 50, "timely_filing": 35}
+        score = score_map.get(analysis.denial_category, 55)
+        if claim.clinical_notes:
+            score = min(95, score + 10)
+
+        return AppealLetter(
+            subject_line=f"Appeal — Claim for Patient {claim.patient_id}, {claim.denial_code}",
+            date=today,
+            payer_address=f"{claim.payer} Claims Review Department",
+            re_line=f"Re: Appeal of Claim for Patient {claim.patient_id}, DOS {claim.date_of_service}",
+            opening="Dear Appeals Review Committee,",
+            medical_necessity="See full letter for clinical justification." if analysis.track == "clinical" else "N/A — Administrative issue.",
+            policy_citations=policy_text,
+            conclusion="We respectfully request that this claim be reconsidered and reprocessed for payment.",
+            attachments_needed=attachments,
+            missing_evidence=missing,
+            success_score_1_to_100=score,
+            full_text=full_text,
+        )
+    except Exception as e:
+        print(f"[ClaimPilot] LLM appeal generation failed: {e}")
+        return None
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────
 
 @v1_fallback_router.post("/claims/analyze", response_model=AppealResult)
 async def analyze_claim(claim: Claim):
-    """Process a denied claim and generate an appeal (lightweight, no LLM required)."""
+    """Process a denied claim and generate an appeal.
+    Uses LLM (Withmartian) if available, falls back to templates."""
     analysis = _classify(claim)
     policies = _retrieve_policies(claim, analysis)
-    appeal = _generate_appeal(claim, analysis, policies)
+
+    # Try LLM-powered appeal first
+    appeal = await _llm_generate_appeal(claim, analysis, policies)
+    if appeal is None:
+        # Fall back to template-based
+        appeal = _generate_appeal(claim, analysis, policies)
+
     return AppealResult(analysis=analysis, policies=policies, appeal=appeal)
 
 
@@ -350,4 +470,5 @@ async def get_demo_claims():
 
 @v1_fallback_router.get("/health")
 async def health_check():
-    return {"status": "ok", "message": "ClaimPilot API is running", "model_configured": False, "mode": "template"}
+    has_llm = bool(settings.MARTIAN_API_KEY)
+    return {"status": "ok", "message": "ClaimPilot API is running", "model_configured": has_llm, "mode": "llm" if has_llm else "template"}
