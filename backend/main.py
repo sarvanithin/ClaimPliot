@@ -30,6 +30,10 @@ app.add_middleware(
 # V1 routes (existing — requires langchain)
 if _v1_available:
     app.include_router(v1_routes.router, prefix="/api")
+else:
+    # Lightweight fallback so the Appeal Agent tab works without langchain
+    from backend.api.v1_fallback import v1_fallback_router
+    app.include_router(v1_fallback_router, prefix="/api")
 
 # V2 routes (new RCM pipeline)
 app.include_router(v2_router)
